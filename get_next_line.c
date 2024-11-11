@@ -5,117 +5,109 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: acesar-m <acesar-m@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/10/30 10:14:03 by acesar-m          #+#    #+#             */
-/*   Updated: 2024/11/04 16:50:10 by acesar-m         ###   ########.fr       */
+/*   Created: 2024/11/11 12:11:21 by acesar-m          #+#    #+#             */
+/*   Updated: 2024/11/11 14:56:13 by acesar-m         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-t_list	*ft_splitnode(t_list *lst, char *nl)
-{
-	t_list			*new;
-	unsigned int	i;
-
-	if (lst == NULL || nl == NULL)
-		return (NULL);
-	new = malloc(sizeof(*new));
-	if (new == NULL)
-		return (NULL);
-	new->next = NULL;
-	i = 0;
-	nl++;
-	while (nl[i] != '\0')
-	{
-		(new->buf)[i] = nl[i];
-		if (i == 0)
-			nl[i] = '\0';
-		i++;
-	}
-	(new->buf)[i] = '\0';
-	return (new);
-}
-
-char	*ft_list_to_string(t_list *lst)
-{
-	size_t	len;
-	size_t	i;
-	size_t	j;
-	t_list	*lstcpy;
-	char	*string;
-
-	lstcpy = lst;
-	len = ft_lstlen(lst);
-	if (len <= 0)
-		return (ft_lstclear(lstcpy));
-	string = malloc(sizeof(*string) * (len + 1));
-	if (string == NULL)
-		return (ft_lstclear(lstcpy));
-	lst = lstcpy;
-	i = 0;
-	while (lst != NULL && i < len)
-	{
-		j = 0;
-		while ((lst->buf)[j] != '\0')
-			string[i++] = (lst->buf)[j++];
-		lst = lst->next;
-	}
-	string[i] = '\0';
-	ft_lstclear(lstcpy);
-	return (string);
-}
-
-void	ft_gnl_check(char **nl, t_list **start, ssize_t *red, t_list *lst)
-{
-	*nl = NULL;
-	*start = NULL;
-	*red = 1;
-	if (lst != NULL)
-	{
-		*start = lst;
-		*nl = ft_strchr(lst->buf, '\n');
-	}
-}
-
-int	ft_extend_list_and_move_lst(t_list **lst, t_list **start)
-{
-	t_list	*new;
-
-	new = malloc(sizeof(*new));
-	if (new == NULL)
-		return ((long)ft_lstclear(*start));
-	new->next = NULL;
-	if (*lst == NULL)
-		*start = new;
-	else
-		(*lst)->next = new;
-	*lst = new;
-	return (1);
-}
+static char	*fill_line_buffer(int fd, char *left_c, char *buffer);
+static char	*set_line(char *line);
+static char	*ft_strchr(char *s, int c);
 
 char	*get_next_line(int fd)
 {
-	static t_list	*lst = NULL;
-	t_list			*start;
-	char			*nl;
-	ssize_t			red;
+	static char	*left_c;
+	char		*line;
+	char		*buffer;
 
-	if (fd < 0 || BUFFER_SIZE <= 0)
-		return (NULL);
-	ft_gnl_check(&nl, &start, &red, lst);
-	while (nl == NULL && red > 0)
+	buffer = (char *)malloc((BUFFER_SIZE + 1) * sizeof(char));
+	if (!buffer)
 	{
-		if (ft_extend_list_and_move_lst(&lst, &start) == 0)
-			return (NULL);
-		red = read(fd, lst->buf, BUFFER_SIZE);
-		if (red < 0)
-		{
-			lst = NULL;
-			return (ft_lstclear(start));
-		}
-		(lst->buf)[red] = '\0';
-		nl = ft_strchr(lst->buf, '\n');
+		free(left_c);
+		return (NULL);
 	}
-	lst = ft_splitnode(lst, nl);
-	return (ft_list_to_string(start));
+	if (fd < 0 || BUFFER_SIZE <= 0)
+	{
+		free(left_c);
+		free(buffer);
+		left_c = NULL;
+		buffer = NULL;
+		return (NULL);
+	}
+	line = fill_line_buffer(fd, left_c, buffer);
+	free(buffer);
+	buffer = NULL;
+	if (!line)
+		return (NULL);
+	left_c = set_line(line);
+	return (line);
+}
+
+static char	*set_line(char *line_buffer)
+{
+	char	*left_c;
+	ssize_t	i;
+	
+	i = 0;
+	while (line_buffer[i] != '\n' && line_buffer[i] != '\0')
+		i++;
+	if (line_buffer[i] == 0 || line_buffer[i + 1] == 0)
+		return (NULL);
+	left_c = ft_substr(line_buffer, i + 1, ft_strlen(line_buffer) - 1);
+	if (*left_c == 0)
+	{
+		free(left_c);
+		left_c = NULL;
+	}
+	line_buffer[i + 1] = 0;
+	return(left_c);
+}
+
+static char	*fill_line_buffer(int fd, char *left_c, char *buffer)
+{
+	ssize_t	b_read;
+	char	*temp;
+	
+	b_read = 1;
+	while (b_read > 0)
+	{
+		b_read = read(fd, buffer, BUFFER_SIZE);
+		if (b_read == -1)
+		{
+			free(left_c);
+			return (NULL);
+		}
+		else if (b_read == 0)
+			break;
+		buffer[b_read] = '\0';
+		if (!left_c)
+			left_c = ft_strdup("");
+		temp = left_c;
+		left_c = ft_strjoin(temp, buffer);
+		free(temp);
+		temp = NULL;
+		if (ft_strchr(buffer, '\n'))
+			break;
+	}
+	return (left_c);
+}
+
+static char	*ft_strchr(char *s, int c)
+{
+	unsigned int	i;
+	char			ch;
+
+	ch = (char) c;
+	i = 0;
+	while (s[i])
+	{
+		if (s[i] == ch)
+			return ((char *) &s[i]);
+		i++;
+	}
+	if (s[i] == ch)
+		return ((char *) &s[i]);
+	return (NULL);
 }

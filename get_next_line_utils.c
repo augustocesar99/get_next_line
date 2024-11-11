@@ -5,57 +5,84 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: acesar-m <acesar-m@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/04 13:50:35 by acesar-m          #+#    #+#             */
-/*   Updated: 2024/11/04 15:17:01 by acesar-m         ###   ########.fr       */
+/*   Created: 2024/11/11 12:11:31 by acesar-m          #+#    #+#             */
+/*   Updated: 2024/11/11 15:10:41 by acesar-m         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-char	*ft_strchr(char *s, char c)
+char	*ft_strdup(char *s1)
 {
-	while (*s != '\0')
+	char			*dest;
+	unsigned int	i;
+
+	i = 0;
+	dest = (char *)malloc(ft_strlen(s1) + 1);
+	if (!dest)
+		return (NULL);
+	while (s1[i])
 	{
-		if (*s == c)
-			return (s);
-		s++;
+		dest[i] = s1[i];
+		i++;
 	}
-	return (NULL);
+	dest[i] = '\0';
+	return (dest);
 }
 
-size_t	ft_strsize(const char *str)
+size_t	ft_strlen(char *s)
 {
 	size_t	i;
 
 	i = 0;
-	while (str[i] != '\0')
+	while (s[i])
 		i++;
 	return (i);
 }
 
-size_t	ft_lstlen(t_list *lst)
+char *ft_substr(char *s, unsigned int start, size_t len)
 {
-	size_t	len;
+	size_t	i;
+	char	*str;
 
-	len = 0;
-	while (lst != NULL)
+	if (!s)
+		return (NULL);
+	if (start > ft_strlen(s))
+		return (malloc(1));
+	if (len > ft_strlen(s + start))
+		len = ft_strlen(s + start);
+	str = malloc((len + 1) * sizeof(char));
+	if (!str)
+		return (NULL);
+	i = 0;
+	while (i < len)
 	{
-		len += ft_strsize(lst->buf);
-		lst = lst->next;
+		str[i] = s[start + i];
+		i++;
 	}
-	return (len);
+	str[i] = 0;
+	return (str);
 }
 
-void	*ft_lstclear(t_list *lst)
+char *ft_strjoin( char *s1, char *s2)
 {
-	t_list	*temp;
+	char	*new_str;
+	size_t	len_total;
+	size_t	i;
+	size_t	j;
 
-	while (lst != NULL)
-	{
-		temp = (lst)->next;
-		free(lst);
-		lst = temp;
-	}
-	lst = NULL;
-	return (NULL);
+	if (s1 == NULL || s2 == NULL)
+		return (NULL);
+	len_total = ft_strlen(s1) + ft_strlen(s2);
+	new_str = malloc(len_total + 1);
+	if (!new_str)
+		return (NULL);
+	i = 0;
+	j = 0;
+	while (*s1)
+		new_str[i++] = *s1++;
+	while (s2[j] != '\0')
+		new_str[i++] = s2[j++];
+	new_str[i] = '\0';
+	return (new_str);
 }

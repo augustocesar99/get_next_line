@@ -1,0 +1,31 @@
+{
+   "version": "0.2.0",
+   "configurations": [
+      {
+         "name": "Debug Get Next Line",
+         "type": "cppdbg",
+         "request": "launch",
+         "program": "${workspaceFolder}/get_next_line",  // Caminho do executável
+         "args": [],
+         "stopAtEntry": true,  // Isso vai garantir que a execução pare no início
+         "cwd": "${workspaceFolder}",
+         "environment": [],
+         "externalConsole": false,  // Desativa o terminal externo
+         "MIMode": "gdb",
+         "miDebuggerPath": "/usr/bin/gdb",  // Certifique-se de que o GDB está instalado corretamente
+         "preLaunchTask": "build",
+         "miDebuggerArgs": "",
+         "logging": {
+            "engineLogging": false
+         },
+         "sourceFileMap": {
+            "/path/to/src": "${workspaceFolder}"
+         },
+         "intelliSenseMode": "gcc-x86_64",
+         "includePath": [
+            "${workspaceFolder}/**",
+            "/usr/include"
+         ]
+      }
+   ]
+}
