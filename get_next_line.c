@@ -6,7 +6,7 @@
 /*   By: acesar-m <acesar-m@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/11 12:11:21 by acesar-m          #+#    #+#             */
-/*   Updated: 2024/11/12 15:39:08 by acesar-m         ###   ########.fr       */
+/*   Updated: 2024/11/12 17:54:18 by acesar-m         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,18 +60,18 @@ static char	*set_line(char *line_buffer)
 
 static char	*fill_line_buffer(int fd, char *rest_buff, char *read_buffer)
 {
-	ssize_t	buffer_size;
+	ssize_t	bytes_read;
 	char	*temp;
 
-	buffer_size = 1;
-	while (buffer_size > 0)
+	bytes_read = 1;
+	while (bytes_read > 0)
 	{
-		buffer_size = read(fd, read_buffer, BUFFER_SIZE);
-		if (buffer_size == -1)
+		bytes_read = read(fd, read_buffer, BUFFER_SIZE);
+		if (bytes_read == -1)
 			return (NULL);
-		else if (buffer_size == 0)
+		else if (bytes_read == 0)
 			break ;
-		read_buffer[buffer_size] = '\0';
+		read_buffer[bytes_read] = '\0';
 		if (!rest_buff)
 			rest_buff = ft_calloc(1, sizeof(char));
 		temp = rest_buff;
