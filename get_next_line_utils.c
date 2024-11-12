@@ -6,7 +6,7 @@
 /*   By: acesar-m <acesar-m@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/11 12:11:31 by acesar-m          #+#    #+#             */
-/*   Updated: 2024/11/11 15:10:41 by acesar-m         ###   ########.fr       */
+/*   Updated: 2024/11/12 13:47:47 by acesar-m         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,22 @@ char	*ft_strdup(char *s1)
 	return (dest);
 }
 
+void	*ft_calloc(size_t nmemb, size_t size)
+{
+	unsigned char	*ptr;
+	size_t			total_size;
+
+	total_size = nmemb * size;
+	if (nmemb != 0 && (total_size) / nmemb != size)
+		return (NULL);
+	ptr = malloc(total_size);
+	if (!ptr)
+		return (NULL);
+	while (total_size--)
+		ptr[total_size] = 0;
+	return ((void *)ptr);
+}
+
 size_t	ft_strlen(char *s)
 {
 	size_t	i;
@@ -40,7 +56,7 @@ size_t	ft_strlen(char *s)
 	return (i);
 }
 
-char *ft_substr(char *s, unsigned int start, size_t len)
+char	*ft_substr(char *s, unsigned int start, size_t len)
 {
 	size_t	i;
 	char	*str;
@@ -64,7 +80,7 @@ char *ft_substr(char *s, unsigned int start, size_t len)
 	return (str);
 }
 
-char *ft_strjoin( char *s1, char *s2)
+char	*ft_strjoin( char *s1, char *s2)
 {
 	char	*new_str;
 	size_t	len_total;

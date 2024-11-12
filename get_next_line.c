@@ -6,108 +6,102 @@
 /*   By: acesar-m <acesar-m@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/11 12:11:21 by acesar-m          #+#    #+#             */
-/*   Updated: 2024/11/11 14:56:13 by acesar-m         ###   ########.fr       */
+/*   Updated: 2024/11/12 15:39:08 by acesar-m         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static char	*fill_line_buffer(int fd, char *left_c, char *buffer);
-static char	*set_line(char *line);
-static char	*ft_strchr(char *s, int c);
+static char	*fill_line_buffer(int fd, char *left_c, char *read_buffer);
+static char	*set_line(char *line_buffer);
+static char	*ft_strchr(const char *s, int c);
+static char	*free_buffer(char **read_buffer);
 
 char	*get_next_line(int fd)
 {
-	static char	*left_c;
+	static char	*rest_buff = NULL;
 	char		*line;
-	char		*buffer;
+	char		*read_buffer;
 
-	buffer = (char *)malloc((BUFFER_SIZE + 1) * sizeof(char));
-	if (!buffer)
-	{
-		free(left_c);
+	if (fd == -1 || BUFFER_SIZE <= 0)
 		return (NULL);
-	}
-	if (fd < 0 || BUFFER_SIZE <= 0)
-	{
-		free(left_c);
-		free(buffer);
-		left_c = NULL;
-		buffer = NULL;
+	read_buffer = (char *)malloc((BUFFER_SIZE + 1) * sizeof(char));
+	if (!read_buffer)
 		return (NULL);
-	}
-	line = fill_line_buffer(fd, left_c, buffer);
-	free(buffer);
-	buffer = NULL;
+	line = fill_line_buffer(fd, rest_buff, read_buffer);
+	free_buffer(&read_buffer);
 	if (!line)
-		return (NULL);
-	left_c = set_line(line);
+		return (free_buffer(&rest_buff));
+	rest_buff = set_line(line);
 	return (line);
 }
 
 static char	*set_line(char *line_buffer)
 {
-	char	*left_c;
-	ssize_t	i;
-	
-	i = 0;
-	while (line_buffer[i] != '\n' && line_buffer[i] != '\0')
-		i++;
-	if (line_buffer[i] == 0 || line_buffer[i + 1] == 0)
-		return (NULL);
-	left_c = ft_substr(line_buffer, i + 1, ft_strlen(line_buffer) - 1);
-	if (*left_c == 0)
+	char	*rest;
+	int		line_len;
+	int		rest_len;
+
+	line_len = 0;
+	while (line_buffer[line_len] != '\n' && line_buffer[line_len] != '\0')
+		line_len++;
+	if (line_buffer[line_len] == '\n')
+		line_len++;
+	rest_len = ft_strlen(line_buffer) - line_len;
+	if (rest_len > 0)
 	{
-		free(left_c);
-		left_c = NULL;
+		rest = ft_substr(line_buffer, line_len, rest_len);
+		line_buffer[line_len] = '\0';
 	}
-	line_buffer[i + 1] = 0;
-	return(left_c);
+	else
+		rest = NULL;
+	return (rest);
 }
 
-static char	*fill_line_buffer(int fd, char *left_c, char *buffer)
+static char	*fill_line_buffer(int fd, char *rest_buff, char *read_buffer)
 {
-	ssize_t	b_read;
+	ssize_t	buffer_size;
 	char	*temp;
-	
-	b_read = 1;
-	while (b_read > 0)
+
+	buffer_size = 1;
+	while (buffer_size > 0)
 	{
-		b_read = read(fd, buffer, BUFFER_SIZE);
-		if (b_read == -1)
-		{
-			free(left_c);
+		buffer_size = read(fd, read_buffer, BUFFER_SIZE);
+		if (buffer_size == -1)
 			return (NULL);
-		}
-		else if (b_read == 0)
-			break;
-		buffer[b_read] = '\0';
-		if (!left_c)
-			left_c = ft_strdup("");
-		temp = left_c;
-		left_c = ft_strjoin(temp, buffer);
-		free(temp);
-		temp = NULL;
-		if (ft_strchr(buffer, '\n'))
-			break;
+		else if (buffer_size == 0)
+			break ;
+		read_buffer[buffer_size] = '\0';
+		if (!rest_buff)
+			rest_buff = ft_calloc(1, sizeof(char));
+		temp = rest_buff;
+		rest_buff = ft_strjoin(temp, read_buffer);
+		free_buffer(&temp);
+		if (ft_strchr(read_buffer, '\n'))
+			break ;
 	}
-	return (left_c);
+	return (rest_buff);
 }
 
-static char	*ft_strchr(char *s, int c)
+static char	*ft_strchr(const char *s, int c)
 {
-	unsigned int	i;
-	char			ch;
-
-	ch = (char) c;
-	i = 0;
-	while (s[i])
+	while (*s)
 	{
-		if (s[i] == ch)
-			return ((char *) &s[i]);
-		i++;
+		if (*s == (char)c)
+			return ((char *)s);
+		s++;
 	}
-	if (s[i] == ch)
-		return ((char *) &s[i]);
+	if (c == '\0')
+		return ((char *)s);
+	return (NULL);
+}
+
+static char	*free_buffer(char **read_buffer)
+{
+	if (read_buffer && *read_buffer)
+	{
+		free(*read_buffer);
+		*read_buffer = NULL;
+	}
 	return (NULL);
 }
